@@ -1,0 +1,7 @@
+#!/bin/bash
+docker run -it \
+	-v $PWD/src:/app/src \
+	-v $PWD/dist:/app/dist \
+	-v $PWD/webpack.config.js:/app/webpack.config.js \
+	-v $PWD/package.json:/app/package.json \
+	dtn-client:local /bin/sh
