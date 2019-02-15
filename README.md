@@ -71,9 +71,9 @@ dtn.getAd({ adunit : "/NETWORK_CODE/ADUNIT_CODE", size : "WIDTHxHEIGHT" }, funct
 
 # API Documentation
 
-## dtn_client(addScript) [constructor]
+## dtn_client(addScript)
 
-Initializes the dtn_client object.
+Constructor that initializes the dtn_client object. This must be called in order to use `dtn_client.renderAds()` or `dtn_client.getAds(args, cb)`.
 
 * `addScript` - `boolean` - default `false` - If true, will inject Google's gpt.js script into the dom.
 
