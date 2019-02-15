@@ -48,8 +48,6 @@ dtn.getAd({ adunit : "/NETWORK_CODE/ADUNIT_CODE", size : "WIDTHxHEIGHT" }, funct
 ### Basic Example
 
 ```html
-
-```html
 <body>
 	<div id="ad_container_1" data-sv-adunit="/214662569/DTN_header_test" data-sv-adsize="700x300"></div>
 
