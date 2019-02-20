@@ -6,7 +6,7 @@ Browser DTN client. There are 3 ways to utilize this package. Via a webpack comp
 
 * Webpack - `import { GamClient } from "dtn-client"`
 * RequireJS - `require(["dtn-client"], function(dtnClient) {})`
-* Script - `<script src="TODO"></script>`. When using the script include, it will add a global variable at `window.dtnClient`.
+* Script - `<script src="https://unpkg.com/@simpleview/dtn-client"></script>`. When using the script include, it will add a global variable at `window.dtnClient`.
 
 For the requireJS variant you will need to point your RequireJs config to the `dist/index.min.js` file.
 
