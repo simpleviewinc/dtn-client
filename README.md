@@ -2,84 +2,66 @@
 
 `npm install dtn-client`
 
-Wrapper library for Google Ad Manager
+Browser DTN client. There are 3 ways to utilize this package. Via a webpack compilation system, in requireJS, or via a direct script.
 
-* Server - `require("dtn-client")`
-* Webpack - `import { dtn_client } from "dtn-client"`
-* RequireJS - `require(["dtn-client"], function(dtn_client) {})`
+* Webpack - `import { GamClient } from "dtn-client"`
+* RequireJS - `require(["dtn-client"], function(dtnClient) {})`
+* Script - `<script src="TODO"></script>`. When using the script include, it will add a global variable at `window.dtnClient`.
 
 For the requireJS variant you will need to point your RequireJs config to the `dist/index.min.js` file.
 
-# Features
+# GamClient
+
+GamClient is for interfacing with the Google Ad Manager system. It can handle the following use-cases.
 
 1. Render all ads on a page with a single function call.
 1. Won't re-render ads if it doesn't need to.
-1. Pull the creative of an ad for custom ad handling.
-1. Automatically append gpt.js script to the dom.
+1. Pull the creative of an ad for custom ad rendering.
 
-# Getting Started
-
-`npm install dtn-client`
+## Banner Ads
 
 Define all of your ads with empty divs containing the network, adunit, and size of the ad(s) to be displayed. 
 
 ```html
 <div data-sv-adunit="/NETWORK_CODE/ADUNIT_CODE" data-sv-adsize="WIDTHxHEIGHT"></div>
 ```
-dtn-client is very simple to use - only requiring 2 lines of javascript code to render all of your ads. 
 
-```js
-// basic syntax
-var dtn = new dtn_client(true);
-dtn.renderAds();
+Then, include the following script.
+
+```html
+<script>
+	var dtn = new dtnClient.GamClient();
+	dtn.renderAds();
+</script>
 ```
+
+If you ever load content after the initial call to `renderAds` you can call it again to re-render the ads.
+
+## Custom Rendered Ads
+
+For ads where you want to manually pull a creative associated with an ad so you can render it yourself, utilize `GamClient.getAd()`.
 
 ```js
 // manually pull an ad's creative
-var dtn = new dtn_client(true);
+var dtn = new dtnClient.GamClient();
 dtn.getAd({ adunit : "/NETWORK_CODE/ADUNIT_CODE", size : "WIDTHxHEIGHT" }, function(data) {
-	$("#ad_container").html(data);
+	// do something to render result of data
 });
-
 ```
 
-## Examples
+## API Documentation
 
-### Basic Example
+### GamClient(addScript)
 
-```html
-<body>
-	<div id="ad_container_1" data-sv-adunit="/214662569/DTN_header_test" data-sv-adsize="700x300"></div>
-
-	<div id="ad_container_2"></div>
-
-	<script>
-		var dtn = new dtn_client(true);
-
-		// will render ad in #ad_container_1
-		dtn.renderAds();
-
-		// pull the creative for an ad and insert into #ad_container_2
-		dtn.getAd({ adunit : "/214662569/dtn_test_300x250", size : "300x250" }, function(data) {
-			$("#ad_container_2").html(data)
-		});
-	</script>
-</body>
-```
-
-# API Documentation
-
-## dtn_client(addScript)
-
-Constructor that initializes the dtn_client object. This must be called in order to use `dtn_client.renderAds()` or `dtn_client.getAd(args, cb)`.
+Constructor that initializes the GamClient object. This must be called in order to use `GamClient.renderAds()` or `GamClient.getAd(args, cb)`.
 
 * `addScript` - `boolean` - default `false` - If true, will inject Google's gpt.js script into the dom.
 
-## dtn_client.renderAds()
+### GamClient.renderAds()
 
 Renders all ads on a page. Calling this multiple times will not reload an add but will render ads that have been added to the dom after the previous renderAds() call. 
 
-## dtn_client.getAd(args, cb)
+### GamClient.getAd(args, cb)
 
 Returns the creative for and ad. Impression tracking, and display of the ad must be manually done when using this function. 
 
@@ -91,4 +73,9 @@ Returns the creative for and ad. Impression tracking, and display of the ad must
 # Development
 
 `npm run docker` - To load the dev environment.
-`npm run build` - To combile the `index.min.js` for UMD.
+`npm start` - To combile the `index.min.js` for UMD. Browse to http://kube.simpleview.io:8080/ . Any changes made to files in the `src` folder will automatically trigger a rebuild of the `dist/index.min.js` file.
+
+# GAM Documentation
+
+* GPT Libary Reference - https://developers.google.com/doubleclick-gpt/reference
+* Load Creative with URL - https://support.google.com/admanager/answer/2623168?hl=en
