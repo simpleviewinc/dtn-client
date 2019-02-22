@@ -37,6 +37,42 @@ Then, include the following script.
 
 If you ever load content after the initial call to `renderAds` you can call it again to re-render the ads.
 
+## HTML Banner Ads
+
+By default all ads appear inside an iframe, which means that page-level stylings aren't available to them. If you do not want the iframe you can pass `data-sv-adstyle="html"` and it will extract the ad from the iFrame. This method will generally be used with ads of type "html" or "custom" in GAM.
+
+```html
+<div data-sv-adunit="/NETWORK_CODE/ADUNIT_CODE" data-sv-adsize="WIDTHxHEIGHT" data-sv-adstyle="html"></div>
+```
+
+Requirements:
+
+* Ensure links are tracked with `<a href='%%CLICK_URL_UNESC%%%%DEST_URL%%'>` in order to click track and redirect to the appropriate location.
+* Ensure your ad creative contains `<img src="%%VIEW_URL_UNESC%%" style="display:none">` to track the impression.
+
+## Template Ads
+
+The Creative Template ad type allows you to declare ads as a data object of key value pairs. This allows you to simply declare the data of an ad, but keep the template with the site's codebase (instead of copy pasting HTML into the ad server).
+
+In order to use this type of ad specify `data-sv-adstyle="template"` and declare the template inside the div. The `{{key}}` will be filled from the data passed from the creative.
+
+```html
+<div data-sv-adunit="/NETWORK_CODE/ADUNIT_CODE" data-sv-adsize="WIDTHxHEIGHT" data-sv-adstyle="html">
+	<template>
+		<a href="{{url}}">
+			<img src="{{imageurl}}"/>
+			<div>{{title}}</div>
+		</a>
+		
+	</template>
+</div>
+```
+
+Requirements:
+
+* Ensure a key contains `%%CLICK_URL_UNESC%%%%DEST_URL%%` in order to click track the ad as well as redirect to the creative's url.
+* Ensure a key contains `%%VIEW_URL_UNESC%%` and your template places `<img src="{{impressionUrl}}" style="display:none">` to track the impression.
+
 ## Custom Rendered Ads
 
 For ads where you want to manually pull a creative associated with an ad so you can render it yourself, utilize `GamClient.getAd()`.
@@ -79,3 +115,5 @@ Returns the creative for and ad. Impression tracking, and display of the ad must
 
 * GPT Libary Reference - https://developers.google.com/doubleclick-gpt/reference
 * Load Creative with URL - https://support.google.com/admanager/answer/2623168?hl=en
+* Macros - https://support.google.com/admanager/answer/2376981?hl=en
+* GPT Samples - https://support.google.com/admanager/answer/4578089?hl=en

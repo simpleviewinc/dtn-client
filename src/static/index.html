@@ -34,6 +34,24 @@
 		
 		Collection Ad: should have ad
 		<div id="collectionAd"></div>
+		<hr>
+		
+		HTML Style: should have ad
+		<div class="dtnad" data-sv-adunit="/214662569/dtn_html_ads" data-sv-adsize="300x250" data-sv-adstyle="html"></div>
+		<hr>
+		
+		Template Ad: should have ad
+		<div class="dtnad" data-sv-adunit="/214662569/dtn_template_ads" data-sv-adsize="300x250" data-sv-adstyle="template">
+			<template>
+				<a href="{{url}}">
+					<div class="description">{{description}}</div>
+					<div class="title">{{title}}</div>
+					<img src="{{image}}"/>
+				</a>
+				<img src="{{impressionUrl}}" style="display:none">
+			</template>
+		</div>
+		<hr>
 		
 		<script src="/index.min.js"></script>
 		<script>

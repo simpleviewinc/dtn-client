@@ -23,29 +23,53 @@ GamClient.prototype.renderAds = function() {
 			domAd.id = "sv-ad-" + self._slotId++;
 		}
 		
-		// convert size to array of number for Google
-		var sizeArr = domAd.getAttribute("data-sv-adsize").split("x");
-		sizeArr = sizeArr.map(function(val) { return Number(val); });
-		
-		// push ad's id into slot array
-		
 		var adSlot = {
 			id : domAd.id,
 			adunit : domAd.getAttribute("data-sv-adunit"),
-			size : sizeArr
+			size : domAd.getAttribute("data-sv-adsize"),
+			style : domAd.getAttribute("data-sv-adstyle") || "iframe",
+			template : domAd.innerHTML
 		}
 		
-		window.googletag.cmd.push(function() {
-			var slot = window.googletag.defineSlot(adSlot.adunit, adSlot.size, adSlot.id);
+		// convert from "300x250" to [300, 250] for Google
+		adSlot.sizeArr = adSlot.size.split("x").map(function(val) { return Number(val); });
+		
+		if (adSlot.style === "iframe") {
+			window.googletag.cmd.push(function() {
+				var slot = window.googletag.defineSlot(adSlot.adunit, adSlot.sizeArr, adSlot.id);
 
-			// slot will be null if no available slots left (don't re-render)
-			if (slot === null) { return; }
+				// slot will be null if no available slots left (don't re-render)
+				if (slot === null) { return; }
 
-			slot = slot.addService(window.googletag.pubads());
+				slot = slot.addService(window.googletag.pubads());
 
-			// display ads
-			window.googletag.display(adSlot.id);
-		});
+				// display ads
+				window.googletag.display(adSlot.id);
+			});
+		} else if (adSlot.style === "html") {
+			self.getAd({ adunit : adSlot.adunit, size : adSlot.size }).then(function(result) {
+				domAd.innerHTML = result;
+			});
+		} else if (adSlot.style === "template") {
+			self.getAd({ adunit : adSlot.adunit, size : adSlot.size }).then(function(result) {
+				if (result.length === 0) { return; }
+				
+				var data = JSON.parse(result);
+				var str = adSlot.template;
+				
+				// fill tags from the data
+				for(var i in data) {
+					str = str.replace(new RegExp("{{" + i + "}}", "g"), data[i]);
+				}
+				
+				// remove remaining tags
+				str = str.replace(/{{[^}]*}}/g, "");
+				// remove template tags
+				str = str.replace(/<\/?template>/g, "");
+				
+				domAd.innerHTML = str;
+			});
+		}
 	});
 }
 
