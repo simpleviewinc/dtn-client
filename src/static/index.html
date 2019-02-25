@@ -32,7 +32,7 @@
 		<div class="dtnad" id="" data-sv-adunit="/214662569/dtn_test_300x250" data-sv-adsize="300x250"></div>
 		<hr>
 		
-		Collection Ad: should have ad
+		Collection Ad Loaded Async: should have ad
 		<div id="collectionAd"></div>
 		<hr>
 		
@@ -59,7 +59,7 @@
 			dtn.renderAds();
 			
 			dtn.getAd({
-				adunit : "/214662569/dtn_test_1x1",
+				adunit : "/214662569/dtn_collection_ads_1",
 				size : "1x1"
 			}).then(function(result) {
 				document.getElementById("collectionAd").innerHTML = result;
