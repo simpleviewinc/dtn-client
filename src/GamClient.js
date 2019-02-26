@@ -12,6 +12,7 @@ function GamClient(args) {
 	args.attrs.adsize = args.attrs.adsize !== undefined ? args.attrs.adsize : "data-sv-adsize";
 	args.attrs.adstyle = args.attrs.adstyle !== undefined ? args.attrs.adstyle : "data-sv-adstyle";
 	args.attrs.adclick = args.attrs.adclick !== undefined ? args.attrs.adclick : "data-sv-adclick";
+	args.attrs.adclickcapture = args.attrs.adclickcapture !== undefined ? args.attrs.adclickcapture : "data-sv-adclickcapture";
 	
 	_init(args.addScript);
 	
@@ -43,6 +44,7 @@ GamClient.prototype.renderAds = function() {
 			adrecid : domAd.getAttribute(self._attrs.adrecid),
 			adsize : domAd.getAttribute(self._attrs.adsize),
 			adstyle : domAd.getAttribute(self._attrs.adstyle) || "iframe",
+			adclickcapture : domAd.getAttribute(self._attrs.adclickcapture),
 			template : domAd.innerHTML
 		}
 		
@@ -76,6 +78,11 @@ GamClient.prototype.renderAds = function() {
 				}
 				
 				domAd.innerHTML = result;
+				
+				self._dispatchEvent(domAd, {
+					adSlot : adSlot,
+					data : data
+				});
 			});
 		} else if (adSlot.adstyle === "template") {
 			if (adSlot.adsize === null) {
@@ -90,6 +97,13 @@ GamClient.prototype.renderAds = function() {
 				if (result.length === 0) { return; }
 				
 				var data = JSON.parse(result);
+				
+				if (data.impressionUrl === undefined) {
+					return console.error("Template adunit '" + adSlot.adunit + "' requires an 'impressionUrl' in it's creative.");
+				}
+				
+				_imgTrack(data.impressionUrl);
+				
 				var str = adSlot.template;
 				
 				// fill tags from the data
@@ -97,12 +111,15 @@ GamClient.prototype.renderAds = function() {
 					str = str.replace(new RegExp("{{" + i + "}}", "g"), data[i]);
 				}
 				
-				// remove remaining tags
-				str = str.replace(/{{[^}]*}}/g, "");
 				// remove template tags
 				str = str.replace(/<\/?template>/g, "");
 				
 				domAd.innerHTML = str;
+				
+				self._dispatchEvent(domAd, {
+					adSlot : adSlot,
+					data : data
+				});
 			});
 		} else if (adSlot.adstyle === "recid") {
 			if (adSlot.adrecid === null) {
@@ -122,27 +139,49 @@ GamClient.prototype.renderAds = function() {
 				
 				var data = JSON.parse(result);
 				
-				// track impression
-				var img = document.createElement("img");
-				img.src = data.impressionUrl;
-				img.style = "display: none;";
-				document.querySelector("body").appendChild(img);
+				var validKeys = ["recid", "impressionUrl", "clickUrl"];
+				for(var i = 0; i < validKeys.length; i++) {
+					var key = validKeys[i];
+					if (data[key] === undefined || typeof data[key] !== "string" || data[key].length === 0) {
+						return console.error("Featured listing ad templates require a valid '" + key + "'");
+					}
+				}
 				
+				// track impression
+				_imgTrack(data.impressionUrl);
+				
+				// track links by appending the redirectURL to the link
 				var links = domAd.querySelectorAll("[" + self._attrs.adclick + "]");
 				links.forEach(function(domLink) {
 					var url = domLink.getAttribute("href");
 					if (url === null) { return; }
 					
 					if (url.match(/^https?:\/\//) === null) {
-						return console.error(new Error("Unable to track non-absolute url '" + url + "'"));
+						return console.error("Unable to track non-absolute url '" + url + "'.");
 					}
 					
 					domLink.setAttribute("href", data.clickUrl + url);
 				});
 				
-				var e = document.createEvent("CustomEvent");
-				e.initCustomEvent(self._args.loadEvent, true, true, data);
-				domAd.dispatchEvent(e);
+				// track elements which utilize dom capturing
+				if (domAd.adclickcapture !== null) {
+					// by binding in the capture phase, it will fire before the event actually reaches the click target
+					var capture = true;
+					
+					var captureFn = function(e) {
+						_track(data.clickUrl);
+						
+						domAd.removeEventListener("click", captureFn, capture);
+					}
+					
+					domAd.addEventListener("click", captureFn, capture);
+				}
+				
+				// call events for more complicated use-cases
+				self._dispatchEvent(domAd, {
+					adSlot : adSlot,
+					data : data
+				});
 			});
 		}
 	});
@@ -184,7 +223,15 @@ GamClient.prototype.getAd = function(args, cb) {
 	http.send();
 }
 
-var _init = function(addScript) {
+GamClient.prototype._dispatchEvent = function(domAd, data) {
+	var self = this;
+	
+	var e = document.createEvent("CustomEvent");
+	e.initCustomEvent(self._args.loadEvent, true, true, data);
+	domAd.dispatchEvent(e);
+}
+
+function _init(addScript) {
 	if (addScript === true) {
 		// inject GPT script before self
 		(function(d,s){var f=d.getElementsByTagName(s)[0],
@@ -201,6 +248,26 @@ var _init = function(addScript) {
 		window.googletag.pubads().enableSingleRequest();
 		window.googletag.enableServices();
 	});
+}
+
+function _imgTrack(url) {
+	var img = document.createElement("img");
+	img.src = url;
+	img.style = "display: none;";
+	document.querySelector("body").appendChild(img);
+}
+
+function _beaconTrack(url) {
+	navigator.sendBeacon(url);
+}
+
+// utilize the best available method to track a url
+function _track(url) {
+	if (navigator.sendBeacon) {
+		_beaconTrack(url);
+	} else {
+		_imgTrack(url);
+	}
 }
 
 module.exports = GamClient;

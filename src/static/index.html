@@ -48,7 +48,6 @@
 					<div class="title">{{title}}</div>
 					<img src="{{image}}"/>
 				</a>
-				<img src="{{impressionUrl}}" style="display:none">
 			</template>
 		</div>
 		<hr>
@@ -62,14 +61,20 @@
 		
 		Listing Ad: Built with event
 		<div id="eventItem" class="dtnad" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="1">
-			<p><a href="http://www.google.com/">Title 0</a></p>
+			<p><a href="http://www.google.com/">Title 1</a></p>
+		</div>
+		<hr>
+		
+		<div id="hax" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="3" data-sv-adclickcapture>
+			<p><a href="http://www.google.com/">Title 3</a></p>
+			<p>What</p>
 		</div>
 		
 		<script src="/index.min.js"></script>
 		<script>
 			document.getElementById("eventItem").addEventListener("sv-adloaded", function(e) {
 				var href = this.querySelector("a").getAttribute("href");
-				this.querySelector("a").setAttribute("href", e.detail.clickUrl + href);
+				this.querySelector("a").setAttribute("href", e.detail.data.clickUrl + href);
 			}, false);
 			
 			var dtn = new dtnClient.GamClient();

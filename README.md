@@ -35,6 +35,7 @@ For most use-cases ads are loaded by marking dom elements with specific data att
 * `data-sv-adrecid` - The recid to use for targeting when using ad style `recid`.
 * `data-sv-adsize` - The size of the ad in the form of `WIDTHxHEIGHT` e.g. `300x250`. Used in ad style `iframe`, `html`, `template`.
 * `data-sv-adclick` - A url to count as a clickthrough when using ad style `recid`.
+* `data-sv-adclickcapture` - If placed on an ad of style `recid`, it will cause a click ANYWHERE within it to count as a conversion. If using this, do not utilize `data-sv-adclick`.
 
 Mark the divs on your page with the above attributes, and then call `renderAds()` to render all ads.
 
@@ -82,7 +83,6 @@ The template below assumes that the key value pairs return a key called `url`, `
 			<img src="{{imageurl}}"/>
 			<div>{{title}}</div>
 		</a>
-		<img src="{{impressionUrl}}" style="display:none">
 	</template>
 </div>
 ```
@@ -90,7 +90,7 @@ The template below assumes that the key value pairs return a key called `url`, `
 Requirements:
 
 * Ensure a key contains `%%CLICK_URL_UNESC%%%%DEST_URL%%` which is used in any `a` tags in order to track the click through, as well as redirect to the creative's url.
-* Ensure a key contains `%%VIEW_URL_UNESC%%` and your template places `<img src="{{impressionUrl}}" style="display:none">` to track the impression.
+* Ensure a key named `impressionUrl` contains `%%VIEW_URL_UNESC%%` so the system can track the impression.
 
 ## Recid Ads `data-sv-adstyle="recid"`
 
@@ -105,6 +105,8 @@ In the following template, it will track the impression to the ad that is return
 </div>
 ```
 
+If you want a click ANYWHERE within the ad to count as a conversion, instead of just on out-bound links, then you can add `data-sv-adclickcapture` to div and it will track all clicks within the element as a conversion.
+
 # API Documentation
 
 ## GamClient(args)
@@ -113,6 +115,8 @@ Constructor that initializes the GamClient object. This must be called in order 
 
 * args - `object`
 	* `addScript` - `boolean` - default `true` - If true, will inject Google's gpt.js script into the dom.
+	* `loadEvent` - `string` - default `sv-adloaded` - Event thrown when an ad of type `template`, `html` or `recid`. It is dispatched on the event that has the `data-sv-adunit`.
+		* When listening on `sv-adloaded` the event handler will receive an `Event` object which contains `detail` key with `{ data, adSlot }`.
 	* `attrs` - `object`
 		* `adcomplete` - `string` - default `data-sv-adcomplete` - Attribute used for marking when an ad has loaded.
 		* `adunit` - `string` - default `data-sv-adunit` - Attribute used for determining the GAM adunit.
@@ -120,6 +124,7 @@ Constructor that initializes the GamClient object. This must be called in order 
 		* `adrecid` - `string` - default `data-sv-adrecid` - Attribute used for determining the recid used when ad style is `recid`.
 		* `adsize` - `string` - default `data-sv-adsize` - Attribute used for determining the ad size when ad style is `iframe`, `template`, or `html`.
 		* `adclick` - `string` - default `data-sv-adclick` - Attribute used for marking URLs to count as ad click throughs when ad style is `recid`.
+		* `adclickcapture` - `string` - default `data-sv-adclickcapture` - Attribute for marking a `recid` ad so that all clicks within it will count as a conversion.
 
 ## GamClient.renderAds()
 
