@@ -58,9 +58,20 @@
 			<p><a href="http://www.google.com/" data-sv-adclick>Title 0</a></p>
 			<p>Some description <a href="http://www.reddit.com/" data-sv-adclick>Read More</a></p>
 		</div>
+		<hr>
+		
+		Listing Ad: Built with event
+		<div id="eventItem" class="dtnad" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="1">
+			<p><a href="http://www.google.com/">Title 0</a></p>
+		</div>
 		
 		<script src="/index.min.js"></script>
 		<script>
+			document.getElementById("eventItem").addEventListener("sv-adloaded", function(e) {
+				var href = this.querySelector("a").getAttribute("href");
+				this.querySelector("a").setAttribute("href", e.detail.clickUrl + href);
+			}, false);
+			
 			var dtn = new dtnClient.GamClient();
 			dtn.renderAds();
 			

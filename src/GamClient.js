@@ -4,6 +4,7 @@ function GamClient(args) {
 	args = args || {};
 	
 	args.addScript = args.addScript !== undefined ? args.addScript : true;
+	args.loadEvent = args.loadEvent !== undefined ? args.loadEvent : "sv-adloaded";
 	args.attrs = args.attrs !== undefined ? args.attrs : {};
 	args.attrs.adcomplete = args.attrs.complete !== undefined ? args.attrs.complete : "data-sv-adcomplete";
 	args.attrs.adunit = args.attrs.adunit !== undefined ? args.attrs.adunit : "data-sv-adunit";
@@ -18,6 +19,7 @@ function GamClient(args) {
 	self._getAdTile = 0;
 	self._slotId = 0;
 	
+	self._args = args;
 	self._attrs = args.attrs;
 }
 
@@ -137,6 +139,10 @@ GamClient.prototype.renderAds = function() {
 					
 					domLink.setAttribute("href", data.clickUrl + url);
 				});
+				
+				var e = document.createEvent("CustomEvent");
+				e.initCustomEvent(self._args.loadEvent, true, true, data);
+				domAd.dispatchEvent(e);
 			});
 		}
 	});
