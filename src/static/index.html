@@ -53,6 +53,12 @@
 		</div>
 		<hr>
 		
+		Listing Ad: should have ad
+		<div class="dtnad" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="0">
+			<p><a href="http://www.google.com/" data-sv-adclick>Title 0</a></p>
+			<p>Some description <a href="http://www.reddit.com/" data-sv-adclick>Read More</a></p>
+		</div>
+		
 		<script src="/index.min.js"></script>
 		<script>
 			var dtn = new dtnClient.GamClient();
@@ -61,7 +67,9 @@
 			dtn.getAd({
 				adunit : "/214662569/dtn_collection_ads_1",
 				size : "1x1"
-			}).then(function(result) {
+			}, function(err, result) {
+				if (err) { throw err; }
+				
 				document.getElementById("collectionAd").innerHTML = result;
 			})
 		</script>
