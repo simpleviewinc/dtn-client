@@ -46,7 +46,7 @@ Mark the divs on your page with the above attributes, and then call `renderAds()
 
 It is safe to call `renderAds()` multiple times. If you call `renderAds()` more than once, it will not re-render an ad that has already rendered. If you dynamically add containers to the page you will need to call `renderAds()` again to render them.
 
-## Banner ad, default, `data-sv-adstyle="iframe"`
+## Banner ad (default) `data-sv-adstyle="iframe"`
 
 Renders an ad within an iframe. The default behavior of `data-sv-adstyle`.
 
@@ -105,9 +105,9 @@ In the following template, it will track the impression to the ad that is return
 </div>
 ```
 
-## API Documentation
+# API Documentation
 
-### GamClient(args)
+## GamClient(args)
 
 Constructor that initializes the GamClient object. This must be called in order to use `GamClient.renderAds()` or `GamClient.getAd(args, cb)`.
 
@@ -121,11 +121,11 @@ Constructor that initializes the GamClient object. This must be called in order 
 		* `adsize` - `string` - default `data-sv-adsize` - Attribute used for determining the ad size when ad style is `iframe`, `template`, or `html`.
 		* `adclick` - `string` - default `data-sv-adclick` - Attribute used for marking URLs to count as ad click throughs when ad style is `recid`.
 
-### GamClient.renderAds()
+## GamClient.renderAds()
 
 Renders all ads on a page. Calling this multiple times will not reload an add but will render ads that have been added to the dom after the previous `renderAds()` call. 
 
-### GamClient.getAd(args, cb)
+## GamClient.getAd(args, cb)
 
 For ads where you want to manually pull a creative associated with an ad so you can render it yourself, utilize `GamClient.getAd()`. This returns the creative for and ad. Impression tracking, and display of the ad must be manually done when using this function.
 
