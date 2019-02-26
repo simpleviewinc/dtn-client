@@ -81,7 +81,7 @@ GamClient.prototype.renderAds = function() {
 				
 				self._dispatchEvent(domAd, {
 					adSlot : adSlot,
-					data : data
+					data : result
 				});
 			});
 		} else if (adSlot.adstyle === "template") {
