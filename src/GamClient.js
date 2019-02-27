@@ -265,7 +265,7 @@ function _init(addScript) {
 		window.googletag.enableServices();
 		window.googletag.pubads().addEventListener("slotRenderEnded", function(event) {
 			var e = document.createEvent("CustomEvent");
-			e.initCustomEvent("slotRenderEnded-" + event.slot.getSlotElementId(), true, true);
+			e.initCustomEvent("slotRenderEnded-" + event.slot.getSlotElementId(), true, true, {});
 			_eventNode.dispatchEvent(e);
 		});
 	});

@@ -125,6 +125,56 @@ describe(__filename, function() {
 		]);
 	});
 	
+	it("should render template ads", async function() {
+		const adUnit = "/214662569/dtn_template_ads";
+		
+		await page.evaluate((adUnit) => {
+			$("#testContainer").html(`
+				<div class="ad" data-sv-adunit="${adUnit}" data-sv-adsize="300x250" data-sv-adstyle="template">
+					<template>
+						<a href="{{url}}">
+							<div class="description">{{description}}</div>
+							<div class="title">{{title}}</div>
+							<img src="{{image}}"/>
+						</a>
+					</template>
+				</div>
+			`);
+			
+			return new Promise(function(resolve) {
+				$(".ad").on("sv-adloaded", function() {
+					resolve(true);
+				});
+				
+				gamClient.renderAds();
+			});
+		}, adUnit);
+		
+		const html = await page.content();
+		assertHtml(html, [
+			{
+				selector : ".ad a",
+				attrs : {
+					href : /http:\/\/adclick.g.doubleclick.net\/pcs\/click/
+				}
+			},
+			{
+				selector : ".ad .description",
+				text : "Testing Description"
+			},
+			{
+				selector : ".ad .title",
+				text : "Testing Title"
+			},
+			{
+				selector : ".ad img",
+				attrs : {
+					src : /https:\/\/tpc.googlesyndication.com\/pagead\/imgad/
+				}
+			}
+		]);
+	});
+	
 	it("should render listing ads", async function() {
 		const adUnit = "/214662569/dtn_featured_listings";
 		
