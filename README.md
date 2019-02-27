@@ -149,8 +149,9 @@ dtn.getAd({ adunit : "/NETWORK_CODE/ADUNIT_CODE", size : "WIDTHxHEIGHT" }, funct
 
 # Development
 
-`npm run docker` - To load the dev environment.
-`npm start` - To combile the `index.min.js` for UMD. Browse to http://kube.simpleview.io:8080/ . Any changes made to files in the `src` folder will automatically trigger a rebuild of the `dist/index.min.js` file.
+* `npm run docker` - To load the dev environment.
+* `npm start` - To combile the `index.min.js` for UMD. Browse to http://kube.simpleview.io:8080/ . Any changes made to files in the `src` folder will automatically trigger a rebuild of the `dist/index.min.js` file.
+* `npm test` - To execute the unit tests in a headless browser.
 
 # GAM Documentation
 
