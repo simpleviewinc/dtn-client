@@ -1,3 +1,5 @@
+var _eventNode = document.createElement("div");
+
 function GamClient(args) {
 	var self = this;
 	
@@ -29,6 +31,7 @@ GamClient.prototype.renderAds = function() {
 	
 	// select all current ads on page
 	var ads = document.querySelectorAll("[" + self._attrs.adunit + "]:not([" + self._attrs.adcomplete + "])");
+	ads = _nodesToArray(ads);
 	ads.forEach(function(domAd, i) {
 		// "" sets it to boolean true, per spec
 		domAd.setAttribute(self._attrs.adcomplete, "");
@@ -63,7 +66,19 @@ GamClient.prototype.renderAds = function() {
 				if (slot === null) { return; }
 
 				slot = slot.addService(window.googletag.pubads());
-
+				
+				var fn = function(e) {
+					self._dispatchEvent(domAd, {
+						adSlot : adSlot
+					});
+					
+					_eventNode.removeEventListener(eventName, fn, false)
+				}
+				
+				// bind to our event rebroadcaster
+				var eventName = "slotRenderEnded-" + adSlot.id;
+				_eventNode.addEventListener(eventName, fn, false);
+				
 				// display ads
 				window.googletag.display(adSlot.id);
 			});
@@ -152,6 +167,7 @@ GamClient.prototype.renderAds = function() {
 				
 				// track links by appending the redirectURL to the link
 				var links = domAd.querySelectorAll("[" + self._attrs.adclick + "]");
+				links = _nodesToArray(links);
 				links.forEach(function(domLink) {
 					var url = domLink.getAttribute("href");
 					if (url === null) { return; }
@@ -247,13 +263,18 @@ function _init(addScript) {
 		// allows multiple ads to be fetched at once
 		window.googletag.pubads().enableSingleRequest();
 		window.googletag.enableServices();
+		window.googletag.pubads().addEventListener("slotRenderEnded", function(event) {
+			var e = document.createEvent("CustomEvent");
+			e.initCustomEvent("slotRenderEnded-" + event.slot.getSlotElementId(), true, true);
+			_eventNode.dispatchEvent(e);
+		});
 	});
 }
 
 function _imgTrack(url) {
 	var img = document.createElement("img");
 	img.src = url;
-	img.style = "display: none;";
+	img.style.display = "none";
 	document.querySelector("body").appendChild(img);
 }
 
@@ -268,6 +289,15 @@ function _track(url) {
 	} else {
 		_imgTrack(url);
 	}
+}
+
+// IE NodesList lacks Array capabilities, so we have to convert to a real array
+function _nodesToArray(nodes) {
+	var arr = [];
+	for(var i = 0; i < nodes.length; i++) {
+		arr.push(nodes[i]);
+	}
+	return arr;
 }
 
 module.exports = GamClient;

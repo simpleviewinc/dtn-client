@@ -2,10 +2,14 @@
 	"name" : "@simpleview/dtn-client",
 	"description" : "Wrapper library for Google Ad Manager",
 	"author" : "Quinton Price <gotshogi@gmail.com>",
-	"version" : "1.0.6",
+	"version" : "1.0.7",
 	"devDependencies" : {
+		"@simpleview/assertlib" : "1.0.1",
 		"chokidar" : "2.1.2",
 		"express" : "4.16.4",
+		"jquery" : "3.3.1",
+		"mocha" : "5.2.0",
+		"puppeteer" : "1.12.2",
 		"webpack" : "4.28.1",
 		"webpack-cli" : "3.2.1"
 	},
@@ -14,6 +18,7 @@
 	"engines" : { "node" : ">=0.10.x" },
 	"scripts" : {
 		"start" : "node src/server.js",
+		"test" : "mocha testing",
 		"build" : "webpack --config webpack.config.js",
 		"docker" : "./docker/build && ./docker/run || true"
 	},

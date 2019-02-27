@@ -17,10 +17,16 @@ watcher.on("all", build);
 
 app.use(express.static(`${__dirname}/static`));
 
+app.use("/node_modules", express.static(`${__dirname}/../node_modules`));
+
 app.use("/index.min.js", express.static(`${__dirname}/../dist/index.min.js`));
 
 build();
 
 app.listen(80, function() {
 	console.log("booted");
+	
+	if (process.send) {
+		process.send("booted");
+	}
 });
