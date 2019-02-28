@@ -173,8 +173,20 @@ GamClient.prototype.renderAds = function() {
 				var capture = true;
 				
 				var captureFn = function(e) {
-					// the clicked element must have the adclick attribute or we don't count it
-					if (e.target.hasAttribute(self._attrs.adclick) === false) {
+					// the clicked element must have the adclick attribute or be inside an element that has it
+					// recurse through the parents until we reach one with the attribute, or our root ad node
+					var target = e.target;
+					var trackable = false;
+					while(target !== domAd) {
+						if (target.hasAttribute(self._attrs.adclick) === true) {
+							trackable = true;
+							break;
+						}
+						
+						target = target.parentElement;
+					}
+					
+					if (trackable === false) {
 						return;
 					}
 					

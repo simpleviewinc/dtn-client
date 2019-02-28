@@ -174,12 +174,19 @@ describe(__filename, function() {
 			$("#testContainer").html(`
 				<div class="ad0" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="0">
 					<a href="http://www.google.com/">Title</a>
-					<p data-sv-adclick>Description</p>
+					<p data-sv-adclick>Description0</p>
 				</div>
 				
 				<div class="ad1" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="1">
 					<a href="http://www.reddit.com/">Title</a>
-					<p>Description2</p>
+					<p>Description1</p>
+				</div>
+				
+				<div class="ad2" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="2">
+					<a href="http://www.facebook.com/">Title</a>
+					<div data-sv-adclick>
+						<p>Description2</p>
+					</div>
 				</div>
 			`);
 			
@@ -204,7 +211,7 @@ describe(__filename, function() {
 			},
 			{
 				selector : ".ad0 p",
-				html : "Description"
+				html : "Description0"
 			},
 			{
 				selector : ".ad1 a",
@@ -214,10 +221,21 @@ describe(__filename, function() {
 			},
 			{
 				selector : ".ad1 p",
+				html : "Description1"
+			},
+			{
+				selector : ".ad2 a",
+				attrs : {
+					href : "http://www.facebook.com/"
+				}
+			},
+			{
+				selector : ".ad2 p",
 				html : "Description2"
 			}
 		]);
 		
+		// click on an element with data-sv-adclick
 		await Promise.all([
 			new Promise(resolve => page.once("request", function(request) {
 				assert.ok(request.url().match(/https:\/\/adclick.g.doubleclick.net\/pcs\/click/));
@@ -226,12 +244,22 @@ describe(__filename, function() {
 			page.click(".ad0 p")
 		]);
 		
+		// click on an element INSIDE something with data-sv-adclick
+		await Promise.all([
+			new Promise(resolve => page.once("request", function(request) {
+				assert.ok(request.url().match(/https:\/\/adclick.g.doubleclick.net\/pcs\/click/));
+				resolve();
+			})),
+			page.click(".ad2 p")
+		]);
+		
 		const failHandler = function(request) {
 			throw new Error("Should not get here!");
 		}
 		
 		page.on("request", failHandler);
 		
+		// click on something NOT inside or with data-sv-adclick, should not trigger a track
 		await page.click(".ad1 p");
 		
 		page.removeListener("request", failHandler);
