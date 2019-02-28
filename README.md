@@ -22,9 +22,23 @@ Init the `GamClient` in one portion of your page.
 
 GamClient is for interfacing with the Google Ad Manager system. It can handle the following use-cases.
 
-1. Render all ads on a page with a single function call.
-1. Won't re-render ads if it doesn't need to.
-1. Pull the creative of an ad for custom ad rendering.
+* Render all ads on a page with a single function call.
+* Won't re-render ads if it doesn't need to.
+* Pull the creative of an ad for custom ad rendering.
+
+# Targeting
+
+All ad style formats with GamClient will automatically receive the following targeting parameters.
+
+* pathname - The value of `document.location.pathname`. It will contain the path of the current request, without query string.
+* href - The value of `document.location.href`. It will contain the *entire* URL, including query string.
+* absolute_pathname - The value of `document.location.origin + document.location.pathname`. This will contain the full url without query string.
+
+In example, if the current URL was `http://www.experiencegr.com/things-to-do/?something=yes`. Following values would be passed to targetting.
+
+* pathname - `/things-to-do/`
+* href - `http://www.experiencegr.com/things-to-do/?something=yes`
+* absolute_pathname - `http://www.experiencegr.com/things-to-do/`
 
 ## Ad Containers
 
@@ -34,8 +48,7 @@ For most use-cases ads are loaded by marking dom elements with specific data att
 * `data-sv-adstyle` - default `iframe` - The type of ad to render. Must be one of `iframe`, `html`, `template`, `recid`. See below for examples of each adstyle.
 * `data-sv-adrecid` - The recid to use for targeting when using ad style `recid`.
 * `data-sv-adsize` - The size of the ad in the form of `WIDTHxHEIGHT` e.g. `300x250`. Used in ad style `iframe`, `html`, `template`.
-* `data-sv-adclick` - A url to count as a clickthrough when using ad style `recid`.
-* `data-sv-adclickcapture` - If placed on an ad of style `recid`, it will cause a click ANYWHERE within it to count as a conversion. If using this, do not utilize `data-sv-adclick`.
+* `data-sv-adclick` - Add this attribute to any dom element which you want to count as a conversion when using ad style `recid`. It should be added to every element that counts, whether it is a `button`, `a`, `div` or any element.
 
 Mark the divs on your page with the above attributes, and then call `renderAds()` to render all ads.
 
@@ -96,7 +109,7 @@ Requirements:
 
 Recid ads are used when you have content that has already loaded on your page but you want to track it's impression and click through in the ad server. This is commonly used for tracking Featured Listings.
 
-In the following template, it will track the impression to the ad that is returned for that recid. It will also cause the click through to be tracked if the user clicks either link with the `data-sv-adclick` attribute.
+In the following template, it will track the impression to the ad that is returned for that recid. It will also cause the click through to be tracked if the user clicks either element with the `data-sv-adclick` attribute.
 
 ```html
 <div data-sv-adunit="/NETWORK_CODE/ADUNIT_CODE" data-sv-adstyle="recid" data-sv-adrecid="RECID">
@@ -104,8 +117,6 @@ In the following template, it will track the impression to the ad that is return
 	<p>Some description <a href="http://www.reddit.com/" data-sv-adclick>Read More</a></p>
 </div>
 ```
-
-If you want a click ANYWHERE within the ad to count as a conversion, instead of just on out-bound links, then you can add `data-sv-adclickcapture` to div and it will track all clicks within the element as a conversion.
 
 # API Documentation
 
@@ -123,8 +134,7 @@ Constructor that initializes the GamClient object. This must be called in order 
 		* `adstyle` - `string` - default `data-sv-adstyle` - Attribute used for determining the ad style.
 		* `adrecid` - `string` - default `data-sv-adrecid` - Attribute used for determining the recid used when ad style is `recid`.
 		* `adsize` - `string` - default `data-sv-adsize` - Attribute used for determining the ad size when ad style is `iframe`, `template`, or `html`.
-		* `adclick` - `string` - default `data-sv-adclick` - Attribute used for marking URLs to count as ad click throughs when ad style is `recid`.
-		* `adclickcapture` - `string` - default `data-sv-adclickcapture` - Attribute for marking a `recid` ad so that all clicks within it will count as a conversion.
+		* `adclick` - `string` - default `data-sv-adclick` - Attribute used for marking dom elements to count as an ad click throughs when ad style is `recid`.
 
 ## GamClient.renderAds()
 
@@ -137,7 +147,7 @@ For ads where you want to manually pull a creative associated with an ad so you 
 * `args` - `object` - The args object.
 	* `adunit` - `string` - The network code and adunit code for the ad in the following format: "/`NETWORK_CODE`/`ADUNIT_CODE`".
 	* `size` - `string` - The size of the adunit in the following format "`WIDTH`x`HEIGHT`".
-	* `targeting` - `string` - The targeting param. Passed in the form of `key=value&key2=value2`. Keys cannot contain special characters. If the value contains special characters you must `encodeURIComponent()` ONLY the `value` portion.
+	* `targeting` - `object` - key/value pairs to target. You do not need to encode the key or value, pass them unencoded.
 * `cb` - `function` - The callback function. This function returns 1 parameter `data` which contains the entirety of the creative for the defined adunit. Errors thrown by this function are completely ignored and not reported. 
 
 ```js

@@ -14,7 +14,6 @@ function GamClient(args) {
 	args.attrs.adsize = args.attrs.adsize !== undefined ? args.attrs.adsize : "data-sv-adsize";
 	args.attrs.adstyle = args.attrs.adstyle !== undefined ? args.attrs.adstyle : "data-sv-adstyle";
 	args.attrs.adclick = args.attrs.adclick !== undefined ? args.attrs.adclick : "data-sv-adclick";
-	args.attrs.adclickcapture = args.attrs.adclickcapture !== undefined ? args.attrs.adclickcapture : "data-sv-adclickcapture";
 	
 	_init(args.addScript);
 	
@@ -47,7 +46,6 @@ GamClient.prototype.renderAds = function() {
 			adrecid : domAd.getAttribute(self._attrs.adrecid),
 			adsize : domAd.getAttribute(self._attrs.adsize),
 			adstyle : domAd.getAttribute(self._attrs.adstyle) || "iframe",
-			adclickcapture : domAd.getAttribute(self._attrs.adclickcapture),
 			template : domAd.innerHTML
 		}
 		
@@ -65,7 +63,11 @@ GamClient.prototype.renderAds = function() {
 				// slot will be null if no available slots left (don't re-render)
 				if (slot === null) { return; }
 
-				slot = slot.addService(window.googletag.pubads());
+				slot.addService(window.googletag.pubads());
+				var defaultTargeting = _getDefaultTargeting();
+				for(var key in defaultTargeting) {
+					slot.setTargeting(key, defaultTargeting[key]);
+				}
 				
 				var fn = function(e) {
 					self._dispatchEvent(domAd, {
@@ -144,7 +146,9 @@ GamClient.prototype.renderAds = function() {
 			self.getAd({
 				adunit : adSlot.adunit,
 				size : "1x1",
-				targeting : "recid=" + adSlot.adrecid
+				targeting : {
+					recid : adSlot.adrecid
+				}
 			}, function(err, result) {
 				if (err) {
 					return console.error(err);
@@ -165,33 +169,21 @@ GamClient.prototype.renderAds = function() {
 				// track impression
 				_imgTrack(data.impressionUrl);
 				
-				// track links by appending the redirectURL to the link
-				var links = domAd.querySelectorAll("[" + self._attrs.adclick + "]");
-				links = _nodesToArray(links);
-				links.forEach(function(domLink) {
-					var url = domLink.getAttribute("href");
-					if (url === null) { return; }
-					
-					if (url.match(/^https?:\/\//) === null) {
-						return console.error("Unable to track non-absolute url '" + url + "'.");
-					}
-					
-					domLink.setAttribute("href", data.clickUrl + url);
-				});
+				// by binding in the capture phase, it will fire before the event actually reaches the click target
+				var capture = true;
 				
-				// track elements which utilize dom capturing
-				if (domAd.adclickcapture !== null) {
-					// by binding in the capture phase, it will fire before the event actually reaches the click target
-					var capture = true;
-					
-					var captureFn = function(e) {
-						_track(data.clickUrl);
-						
-						domAd.removeEventListener("click", captureFn, capture);
+				var captureFn = function(e) {
+					// the clicked element must have the adclick attribute or we don't count it
+					if (e.target.hasAttribute(self._attrs.adclick) === false) {
+						return;
 					}
 					
-					domAd.addEventListener("click", captureFn, capture);
+					_track(data.clickUrl);
+					
+					domAd.removeEventListener("click", captureFn, capture);
 				}
+				
+				domAd.addEventListener("click", captureFn, capture);
 				
 				// call events for more complicated use-cases
 				self._dispatchEvent(domAd, {
@@ -216,14 +208,23 @@ GamClient.prototype.getAd = function(args, cb) {
 		return cb(new Error("getAd requires args.adunit and args.size"));
 	}
 	
-	var tStr = "";
+	var targeting = {};
 	if (args.targeting !== undefined) {
-		tStr = "&t=" + encodeURIComponent(args.targeting);
+		// if the user passed targeting, merge it in
+		_merge(targeting, args.targeting);
 	}
+	// merge the in the default targeting params
+	_merge(targeting, _getDefaultTargeting());
+	
+	var tArr = [];
+	for(var i in targeting) {
+		tArr.push(encodeURIComponent(i) + "=" + encodeURIComponent(targeting[i]));
+	}
+	var tStr = tArr.join("&");
 	
 	// create Http request object
 	var http = new XMLHttpRequest(); 
-	var url = "https://pubads.g.doubleclick.net/gampad/adx?iu="+encodeURIComponent(args.adunit)+"&sz="+encodeURIComponent(args.size)+"&c="+self._c+"&tile="+(self._getAdTile++)+tStr;
+	var url = "https://pubads.g.doubleclick.net/gampad/adx?iu="+encodeURIComponent(args.adunit)+"&sz="+encodeURIComponent(args.size)+"&c="+self._c+"&tile="+(self._getAdTile++) + "&t=" + encodeURIComponent(tStr);
 	http.open("GET", url);
 	
 	// readystatechange cb
@@ -298,6 +299,21 @@ function _nodesToArray(nodes) {
 		arr.push(nodes[i]);
 	}
 	return arr;
+}
+
+function _getDefaultTargeting() {
+	return {
+		pathname : document.location.pathname,
+		absolute_pathname : document.location.origin + document.location.pathname,
+		href : document.location.href,
+		
+	}
+}
+
+function _merge(obj1, obj2) {
+	for(var i in obj2) {
+		obj1[i] = obj2[i];
+	}
 }
 
 module.exports = GamClient;

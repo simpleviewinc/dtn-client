@@ -21,9 +21,7 @@ describe(__filename, function() {
 		});
 		
 		await new Promise(function(resolve) {
-			server.on("message", function() {
-				return resolve();
-			});
+			server.on("message", resolve);
 		});
 		
 		browser = await puppeteer.launch({
@@ -62,9 +60,7 @@ describe(__filename, function() {
 			`);
 			
 			return new Promise(function(resolve) {
-				$(".ad").on("sv-adloaded", function() {
-					resolve(true);
-				});
+				$(".ad").on("sv-adloaded", resolve);
 				
 				gamClient.renderAds();
 			});
@@ -99,9 +95,7 @@ describe(__filename, function() {
 			`);
 			
 			return new Promise(function(resolve) {
-				$(".ad").on("sv-adloaded", function() {
-					resolve(true);
-				});
+				$(".ad").on("sv-adloaded", resolve);
 				
 				gamClient.renderAds();
 			});
@@ -142,9 +136,7 @@ describe(__filename, function() {
 			`);
 			
 			return new Promise(function(resolve) {
-				$(".ad").on("sv-adloaded", function() {
-					resolve(true);
-				});
+				$(".ad").on("sv-adloaded", resolve);
 				
 				gamClient.renderAds();
 			});
@@ -180,16 +172,82 @@ describe(__filename, function() {
 		
 		await page.evaluate((adUnit) => {
 			$("#testContainer").html(`
-				<div class="ad" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="0" data-sv-adclickcapture>
-					<a href="http://www.google.com/" data-sv-adclick>Title</a>
-					<p>Description</p>
+				<div class="ad0" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="0">
+					<a href="http://www.google.com/">Title</a>
+					<p data-sv-adclick>Description</p>
+				</div>
+				
+				<div class="ad1" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="1">
+					<a href="http://www.reddit.com/">Title</a>
+					<p>Description2</p>
 				</div>
 			`);
 			
+			return Promise.all([
+				new Promise(function(resolve) {
+					$(".ad0").on("sv-adloaded", resolve);
+				}),
+				new Promise(function(resolve) {
+					$(".ad1").on("sv-adloaded", resolve);
+				}),
+				gamClient.renderAds()
+			]);
+		}, adUnit);
+		
+		const html = await page.content();
+		assertHtml(html, [
+			{
+				selector : ".ad0 a",
+				attrs : {
+					href : "http://www.google.com/"
+				}
+			},
+			{
+				selector : ".ad0 p",
+				html : "Description"
+			},
+			{
+				selector : ".ad1 a",
+				attrs : {
+					href : "http://www.reddit.com/"
+				}
+			},
+			{
+				selector : ".ad1 p",
+				html : "Description2"
+			}
+		]);
+		
+		await Promise.all([
+			new Promise(resolve => page.once("request", function(request) {
+				assert.ok(request.url().match(/https:\/\/adclick.g.doubleclick.net\/pcs\/click/));
+				resolve();
+			})),
+			page.click(".ad0 p")
+		]);
+		
+		const failHandler = function(request) {
+			throw new Error("Should not get here!");
+		}
+		
+		page.on("request", failHandler);
+		
+		await page.click(".ad1 p");
+		
+		page.removeListener("request", failHandler);
+	});
+	
+	// the ad targetted to this lineitem requires it to be on pathname /blank.html
+	it("should add targeting for pathname", async function() {
+		const adUnit = "/214662569/unit_test_300x250_pathname_blank.html";
+		
+		await page.evaluate((adUnit) => {
+			$("#testContainer").html(`
+				<div class="ad" data-sv-adunit="${adUnit}" data-sv-adsize="300x250"></div>
+			`);
+			
 			return new Promise(function(resolve) {
-				$(".ad").on("sv-adloaded", function() {
-					resolve(true);
-				});
+				$(".ad").on("sv-adloaded", resolve);
 				
 				gamClient.renderAds();
 			});
@@ -198,23 +256,20 @@ describe(__filename, function() {
 		const html = await page.content();
 		assertHtml(html, [
 			{
-				selector : ".ad a",
+				selector : ".ad",
 				attrs : {
-					href : /https:\/\/adclick.g.doubleclick.net\/pcs\/click.*adurl=http:\/\/www.google.com\//
+					"data-sv-adunit" : adUnit,
+					"data-sv-adcomplete" : ""
 				}
 			},
 			{
-				selector : ".ad p",
-				html : "Description"
+				selector : `iframe`,
+				eq : 0,
+				attrs : {
+					id : `google_ads_iframe_${adUnit}_0`,
+					title : "3rd party ad content"
+				}
 			}
-		]);
-		
-		await Promise.all([
-			new Promise(resolve => page.on("request", function(request) {
-				assert.ok(request.url().match(/https:\/\/adclick.g.doubleclick.net\/pcs\/click/));
-				resolve();
-			})),
-			page.click(".ad p")
 		]);
 	});
 });
