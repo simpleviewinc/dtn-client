@@ -7,5 +7,5 @@ jobs:
     steps:
       - checkout
       - run: |
-          docker build -f ./docker/Dockerfile -t dtn-client:local .
-          docker run dtn-client:local npm test
+        ./dev/build
+        docker run dtn-client:local npm test
