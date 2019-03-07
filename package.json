@@ -1,31 +1,33 @@
 {
-	"name" : "@simpleview/dtn-client",
-	"description" : "Wrapper library for Google Ad Manager",
-	"author" : "Quinton Price <gotshogi@gmail.com>",
-	"version" : "1.0.10",
-	"devDependencies" : {
-		"@simpleview/assertlib" : "1.0.1",
-		"chokidar" : "2.1.2",
-		"express" : "4.16.4",
-		"jquery" : "3.3.1",
-		"mocha" : "5.2.0",
-		"puppeteer" : "1.12.2",
-		"webpack" : "4.28.1",
-		"webpack-cli" : "3.2.1"
+	"name": "@simpleview/dtn-client",
+	"description": "Wrapper library for Google Ad Manager",
+	"author": "Quinton Price <gotshogi@gmail.com>",
+	"version": "1.0.11",
+	"devDependencies": {
+		"@simpleview/assertlib": "1.0.1",
+		"chokidar": "2.1.2",
+		"express": "4.16.4",
+		"jquery": "3.3.1",
+		"mocha": "5.2.0",
+		"puppeteer": "1.12.2",
+		"webpack": "4.28.1",
+		"webpack-cli": "3.2.1"
 	},
-	"unpkg" : "dist/index.min.js",
-	"main" : "src/index.js",
-	"engines" : { "node" : ">=0.10.x" },
-	"scripts" : {
-		"start" : "node src/server.js",
-		"test" : "mocha testing",
-		"build" : "webpack --config webpack.config.js",
-		"docker" : "./dev/build && ./dev/run || true",
+	"unpkg": "dist/index.min.js",
+	"main": "src/index.js",
+	"engines": {
+		"node": ">=0.10.x"
+	},
+	"scripts": {
+		"start": "node src/server.js",
+		"test": "mocha testing",
+		"build": "webpack --config webpack.config.js",
+		"docker": "./dev/build && ./dev/run || true",
 		"publish": "./dev/publish"
 	},
-	"repository" : {
-		"type" : "git",
-		"url" : "https://github.com/simpleviewinc/dtn-client.git"
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/simpleviewinc/dtn-client.git"
 	},
-	"license" : "MIT"
+	"license": "MIT"
 }
