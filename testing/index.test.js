@@ -170,36 +170,54 @@ describe(__filename, function() {
 	it("should render listing ads", async function() {
 		const adUnit = "/214662569/dtn_featured_listings";
 		
-		await page.evaluate((adUnit) => {
-			$("#testContainer").html(`
-				<div class="ad0" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="0">
-					<a href="http://www.google.com/">Title</a>
-					<p data-sv-adclick>Description0</p>
-				</div>
+		var waitForRequest = function(url) {
+			return new Promise(function(resolve) {
+				var listener = function(request) {
+					if (request.url().match(url)) {
+						page.removeListener("request", listener);
+						return resolve();
+					}
+				}
 				
-				<div class="ad1" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="1">
-					<a href="http://www.reddit.com/">Title</a>
-					<p>Description1</p>
-				</div>
-				
-				<div class="ad2" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="2">
-					<a href="http://www.facebook.com/">Title</a>
-					<div data-sv-adclick>
-						<p>Description2</p>
+				page.on("request", listener);
+			});
+		}
+		
+		await Promise.all([
+			waitForRequest("https://securepubads.g.doubleclick.net/pcs/view"),
+			waitForRequest("https://securepubads.g.doubleclick.net/pcs/view"),
+			waitForRequest("https://securepubads.g.doubleclick.net/pcs/view"),
+			await page.evaluate((adUnit) => {
+				$("#testContainer").html(`
+					<div class="ad0" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="0">
+						<a href="http://www.google.com/">Title</a>
+						<p data-sv-adclick>Description0</p>
 					</div>
-				</div>
-			`);
-			
-			return Promise.all([
-				new Promise(function(resolve) {
-					$(".ad0").on("sv-adloaded", resolve);
-				}),
-				new Promise(function(resolve) {
-					$(".ad1").on("sv-adloaded", resolve);
-				}),
-				gamClient.renderAds()
-			]);
-		}, adUnit);
+					
+					<div class="ad1" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="1">
+						<a href="http://www.reddit.com/">Title</a>
+						<p>Description1</p>
+					</div>
+					
+					<div class="ad2" data-sv-adunit="/214662569/dtn_featured_listings" data-sv-adstyle="recid" data-sv-adrecid="2">
+						<a href="http://www.facebook.com/">Title</a>
+						<div data-sv-adclick>
+							<p>Description2</p>
+						</div>
+					</div>
+				`);
+				
+				return Promise.all([
+					new Promise(function(resolve) {
+						$(".ad0").on("sv-adloaded", resolve);
+					}),
+					new Promise(function(resolve) {
+						$(".ad1").on("sv-adloaded", resolve);
+					}),
+					gamClient.renderAds()
+				]);
+			}, adUnit)
+		]);
 		
 		const html = await page.content();
 		assertHtml(html, [
@@ -237,19 +255,13 @@ describe(__filename, function() {
 		
 		// click on an element with data-sv-adclick
 		await Promise.all([
-			new Promise(resolve => page.once("request", function(request) {
-				assert.ok(request.url().match(/https:\/\/adclick.g.doubleclick.net\/pcs\/click/));
-				resolve();
-			})),
+			waitForRequest("https://adclick.g.doubleclick.net/pcs/click"),
 			page.click(".ad0 p")
 		]);
 		
 		// click on an element INSIDE something with data-sv-adclick
 		await Promise.all([
-			new Promise(resolve => page.once("request", function(request) {
-				assert.ok(request.url().match(/https:\/\/adclick.g.doubleclick.net\/pcs\/click/));
-				resolve();
-			})),
+			waitForRequest("https://adclick.g.doubleclick.net/pcs/click"),
 			page.click(".ad2 p")
 		]);
 		
