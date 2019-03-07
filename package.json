@@ -20,7 +20,8 @@
 		"start" : "node src/server.js",
 		"test" : "mocha testing",
 		"build" : "webpack --config webpack.config.js",
-		"docker" : "./dev/build && ./dev/run || true"
+		"docker" : "./dev/build && ./dev/run || true",
+		"publish": "./dev/publish"
 	},
 	"repository" : {
 		"type" : "git",
