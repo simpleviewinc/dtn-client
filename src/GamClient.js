@@ -148,7 +148,8 @@ GamClient.prototype.renderAds = function() {
 				size : "1x1",
 				targeting : {
 					recid : adSlot.adrecid
-				}
+				},
+				c : Date.now() + "" + Math.floor(Math.random() * 100000)
 			}, function(err, result) {
 				if (err) {
 					return console.error(err);
@@ -219,6 +220,8 @@ GamClient.prototype.getAd = function(args, cb) {
 	if (args.adunit === undefined || args.size === undefined) {
 		return cb(new Error("getAd requires args.adunit and args.size"));
 	}
+
+	var c = args.c || self._c;
 	
 	var targeting = {};
 	if (args.targeting !== undefined) {
@@ -236,7 +239,7 @@ GamClient.prototype.getAd = function(args, cb) {
 	
 	// create Http request object
 	var http = new XMLHttpRequest(); 
-	var url = "https://pubads.g.doubleclick.net/gampad/adx?iu="+encodeURIComponent(args.adunit)+"&sz="+encodeURIComponent(args.size)+"&c="+self._c+"&tile="+(self._getAdTile++) + "&t=" + encodeURIComponent(tStr);
+	var url = "https://pubads.g.doubleclick.net/gampad/adx?iu="+encodeURIComponent(args.adunit)+"&sz="+encodeURIComponent(args.size)+"&c="+c+"&tile="+(self._getAdTile++) + "&t=" + encodeURIComponent(tStr);
 	http.open("GET", url);
 	
 	// readystatechange cb
