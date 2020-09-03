@@ -9,7 +9,7 @@
 		"express": "4.16.4",
 		"jquery": "3.4.1",
 		"mocha": "5.2.0",
-		"puppeteer": "1.12.2",
+		"puppeteer": "5.2.1",
 		"webpack": "4.28.1",
 		"webpack-cli": "3.2.1"
 	},
