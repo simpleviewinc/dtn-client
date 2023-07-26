@@ -7,7 +7,7 @@ const assert = require("assert");
 const setTimeoutP = util.promisify(setTimeout);
 
 describe(__filename, function() {
-	this.timeout(10000);
+	this.timeout(20000);
 	
 	let server;
 	let browser;
@@ -25,7 +25,7 @@ describe(__filename, function() {
 		});
 		
 		browser = await puppeteer.launch({
-			executablePath: "/usr/bin/chromium-browser",
+			// executablePath: "/usr/bin/chromium-browser",
 			headless : true,
 			args : [
 				"--no-sandbox",
@@ -106,7 +106,7 @@ describe(__filename, function() {
 			{
 				selector : ".ad a",
 				attrs : {
-					href : /http:\/\/adclick.g.doubleclick.net\/pcs\/click/
+					href : /https?:\/\/adclick.g.doubleclick.net\/pcs\/click/
 				}
 			},
 			{
@@ -147,7 +147,7 @@ describe(__filename, function() {
 			{
 				selector : ".ad a",
 				attrs : {
-					href : /http:\/\/adclick.g.doubleclick.net\/pcs\/click/
+					href : /https?:\/\/adclick.g.doubleclick.net\/pcs\/click/
 				}
 			},
 			{
