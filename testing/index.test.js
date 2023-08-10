@@ -48,7 +48,12 @@ describe(__filename, function() {
 	});
 	
 	after(async function() {
-		server.kill("SIGHUP");
+		try {
+			server.kill("SIGHUP");
+		} catch(err) {
+			// If testing on windows, SIGHUP will fail
+			server.kill("SIGINT");
+		}
 	});
 	
 	it("render a normal ad", async function() {
@@ -161,7 +166,7 @@ describe(__filename, function() {
 			{
 				selector : ".ad img",
 				attrs : {
-					src : /https:\/\/tpc.googlesyndication.com\/pagead\/imgad/
+					src : /https:\/\/tpc.googlesyndication.com\/simgad/
 				}
 			}
 		]);
