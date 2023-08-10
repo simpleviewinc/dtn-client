@@ -24,14 +24,25 @@ describe(__filename, function() {
 			server.on("message", resolve);
 		});
 		
-		browser = await puppeteer.launch({
-			// executablePath: "/usr/bin/chromium-browser",
-			headless : true,
-			args : [
-				"--no-sandbox",
-				"--disable-setuid-sandbox"
-			]
-		});
+		if (process.platform == 'win32') {
+			browser = await puppeteer.launch({
+				headless : true,
+				args : [
+					"--no-sandbox",
+					"--disable-setuid-sandbox"
+				]
+			});
+		} else {
+			browser = await puppeteer.launch({
+				executablePath: "/usr/bin/chromium-browser",
+				headless : true,
+				args : [
+					"--no-sandbox",
+					"--disable-setuid-sandbox"
+				]
+			});
+		}
+		
 		
 		page = await browser.newPage();
 		await page.goto("http://localhost/blank.html");
