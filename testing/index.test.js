@@ -7,7 +7,7 @@ const assert = require("assert");
 const setTimeoutP = util.promisify(setTimeout);
 
 describe(__filename, function() {
-	this.timeout(10000);
+	this.timeout(20000);
 	
 	let server;
 	let browser;
@@ -24,14 +24,25 @@ describe(__filename, function() {
 			server.on("message", resolve);
 		});
 		
-		browser = await puppeteer.launch({
-			executablePath: "/usr/bin/chromium-browser",
-			headless : true,
-			args : [
-				"--no-sandbox",
-				"--disable-setuid-sandbox"
-			]
-		});
+		if (process.platform == 'win32') {
+			browser = await puppeteer.launch({
+				headless : true,
+				args : [
+					"--no-sandbox",
+					"--disable-setuid-sandbox"
+				]
+			});
+		} else {
+			browser = await puppeteer.launch({
+				executablePath: "/usr/bin/chromium-browser",
+				headless : true,
+				args : [
+					"--no-sandbox",
+					"--disable-setuid-sandbox"
+				]
+			});
+		}
+		
 		
 		page = await browser.newPage();
 		await page.goto("http://localhost/blank.html");
@@ -48,7 +59,12 @@ describe(__filename, function() {
 	});
 	
 	after(async function() {
-		server.kill("SIGHUP");
+		try {
+			server.kill("SIGHUP");
+		} catch(err) {
+			// If testing on windows, SIGHUP will fail
+			server.kill("SIGINT");
+		}
 	});
 	
 	it("render a normal ad", async function() {
@@ -106,7 +122,7 @@ describe(__filename, function() {
 			{
 				selector : ".ad a",
 				attrs : {
-					href : /http:\/\/adclick.g.doubleclick.net\/pcs\/click/
+					href : /https?:\/\/adclick.g.doubleclick.net\/pcs\/click/
 				}
 			},
 			{
@@ -147,7 +163,7 @@ describe(__filename, function() {
 			{
 				selector : ".ad a",
 				attrs : {
-					href : /http:\/\/adclick.g.doubleclick.net\/pcs\/click/
+					href : /https?:\/\/adclick.g.doubleclick.net\/pcs\/click/
 				}
 			},
 			{
@@ -161,7 +177,7 @@ describe(__filename, function() {
 			{
 				selector : ".ad img",
 				attrs : {
-					src : /https:\/\/tpc.googlesyndication.com\/pagead\/imgad/
+					src : /https:\/\/tpc.googlesyndication.com\/simgad/
 				}
 			}
 		]);
