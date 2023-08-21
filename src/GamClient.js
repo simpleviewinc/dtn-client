@@ -268,7 +268,7 @@ function _init(addScript) {
 		// inject GPT script before self
 		(function(d,s){var f=d.getElementsByTagName(s)[0],
 		j=d.createElement(s);j.async=true;j.src=
-		"//www.googletagservices.com/tag/js/gpt.js";f.parentNode.insertBefore(j,f);
+		"//securepubads.g.doubleclick.net/tag/js/gpt.js";f.parentNode.insertBefore(j,f);
 		})(document,"script");
 	}
 
